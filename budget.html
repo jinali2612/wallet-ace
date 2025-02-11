@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="css/budget.css">
+    <link rel="icon" type="image/x-icon" href="/images/Walletlogoonly.png">
+    <title>Budget</title>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a href="index.html" class="logo">
+            <i class='bx bx-code-alt'></i>
+            <div class="logo-name"><span>Wallet</span>Ace</div>
+        </a>
+        <ul class="side-menu">
+            <li><a href="Dashboard.html"><i class='bx bxs-dashboard'></i>Dashboard</a></li>
+            <li><a href="Account.html"><i class='bx bx-store-alt'></i>Accounts</a></li>
+            <li class=""><a href="split.html"><i class='bx bx-analyse'></i>Split Bills</a></li>
+            <li class="active"><a href="budget.html" onclick="mybudget()"><i class='bx bx-cog'></i>Analysis</a></li>
+            <li><a href="recorddetails.html" onclick="myprofile()"><i class='bx bx-group'></i>Records</a></li>
+        </ul>
+        <ul class="side-menu">
+            <li>
+                <a href="#" class="logout" onclick="mylogout()">
+                    <i class='bx bx-log-out-circle'></i>
+                    Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+    <!-- End of Sidebar -->
+
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Navbar -->
+        <nav>
+            <i class='bx bx-menu'></i>
+            <a href="#" class="notif">
+                <i class='bx bx-bell'></i>
+                <span class="count">12</span>
+            </a>
+            <a href="#" class="profile">
+                <img src="images/logo.png">
+            </a>
+        </nav>
+        <main>
+            <div class="header">
+                <div class="left">
+                    <!-- <h1>Dashboard</h1> -->
+                    <ul class="breadcrumb">
+                        <li><a href="#">
+                                Dashboard
+                            </a></li>
+                        /
+                        <li class="active">Budget</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Insights -->
+            <ul class="insights">
+                <li>
+                    <h2>Expenses Graph</h2>
+                    <canvas id="expensesChart" width="800" height="400"></canvas>
+
+                    <script>
+                        // Function to generate an array of dates for the entire month
+                        function getDatesForMonth() {
+                            const currentDate = new Date();
+                            const year = currentDate.getFullYear();
+                            const month = currentDate.getMonth();
+                            const numDays = new Date(year, month + 1, 0).getDate();
+                            const dates = [];
+                            for (let i = 1; i <= numDays; i++) {
+                                dates.push(new Date(year, month, i).toLocaleDateString());
+                            }
+                            return dates;
+                        }
+
+                        // Fetch expenses data from the server
+                        fetch('http://localhost:3000/api/expenses')
+                            .then(response => response.json())
+                            .then(data => {
+                                const expenses = data.map(expense => ({
+                                    date: new Date(expense.date),
+                                    amount: expense.amount
+                                }));
+
+                                // Prepare data for the chart
+                                const datesForMonth = getDatesForMonth();
+                                const amounts = new Array(datesForMonth.length).fill(0);
+                                let totalAmount = 0;
+                                let currentDate = new Date();
+                                currentDate.setHours(0, 0, 0, 0); // Set time to midnight
+                                for (let i = 0; i < datesForMonth.length; i++) {
+                                    if (new Date(datesForMonth[i]) <= currentDate) {
+                                        expenses.forEach(expense => {
+                                            if (expense.date <= currentDate) {
+                                                totalAmount += expense.amount;
+                                            }
+                                        });
+                                        amounts[i] = totalAmount;
+                                    }
+                                }
+
+                                // Extend the line for future dates
+                                for (let i = datesForMonth.indexOf(currentDate.toLocaleDateString()) + 1; i < datesForMonth.length; i++) {
+                                    amounts[i] = totalAmount;
+                                }
+
+                                // Create the chart
+                                const ctx = document.getElementById('expensesChart').getContext('2d');
+                                const chart = new Chart(ctx, {
+                                    type: 'line',
+                                    data: {
+                                        labels: datesForMonth,
+                                        datasets: [{
+                                            label: 'Total Expenses',
+                                            data: amounts,
+                                            borderColor: 'rgba(54, 162, 235, 1)',
+                                            borderWidth: 2,
+                                            fill: false
+                                        }]
+                                    },
+                                    options: {
+                                        scales: {
+                                            xAxes: [{
+                                                scaleLabel: {
+                                                    display: true,
+                                                    labelString: 'Date'
+                                                }
+                                            }],
+                                            yAxes: [{
+                                                scaleLabel: {
+                                                    display: true,
+                                                    labelString: 'Total Amount'
+                                                }
+                                            }]
+                                        }
+                                    }
+                                });
+                            })
+                            .catch(error => console.error('Error fetching expenses:', error));
+                    </script>
+
+                </li>
+                <li>
+                    <h2>Expense Pie Chart</h2>
+                    <div id="chartContainer">
+                        <canvas id="expensePieChart" width="400" height="400"></canvas>
+                    </div>
+
+                    <script>
+                        // Function to fetch expenses data from MongoDB
+                        async function fetchExpensesData() {
+                            try {
+                                const response = await fetch('http://localhost:3000/api/expenses');
+                                if (!response.ok) {
+                                    throw new Error('Failed to fetch expenses data.');
+                                }
+                                const data = await response.json();
+                                return data;
+                            } catch (error) {
+                                console.error('Error fetching expenses data:', error);
+                            }
+                        }
+
+                        // Function to render pie chart
+                        async function renderPieChart() {
+                            const expensesData = await fetchExpensesData();
+                            const categories = {};
+                            expensesData.forEach(expense => {
+                                categories[expense.category] = categories[expense.category] || 0;
+                                categories[expense.category] += expense.amount;
+                            });
+
+                            // Sort categories by amount in decreasing order
+                            const sortedCategories = Object.keys(categories).sort((a, b) => categories[b] - categories[a]);
+
+                            const categoryLabels = sortedCategories;
+                            const categoryAmounts = sortedCategories.map(category => categories[category]);
+
+                            // Create pie chart
+                            const ctx = document.getElementById('expensePieChart').getContext('2d');
+                            const expensePieChart = new Chart(ctx, {
+                                type: 'pie',
+                                data: {
+                                    labels: categoryLabels,
+                                    datasets: [{
+                                        data: categoryAmounts,
+                                        backgroundColor: [
+                                            'rgba(255, 99, 132, 1)', // Red
+                                            'rgba(54, 162, 235, 1)', // Blue
+                                            'rgba(255, 206, 86, 1)', // Yellow
+                                            'rgba(75, 192, 192, 1)', // Green
+                                            'rgba(153, 102, 255, 1)', // Purple
+                                            'rgba(255, 159, 64, 1)', // Orange
+                                            'rgba(255, 0, 0, 1)',      // Red
+                                            'rgba(0, 255, 0, 1)',      // Green
+                                            'rgba(0, 0, 255, 1)',      // Blue
+                                            'rgba(255, 255, 0, 1)',    // Yellow
+                                            'rgba(255, 0, 255, 1)',    // Magenta
+
+                                            // Add more colors as needed
+                                        ],
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    title: {
+                                        display: true,
+                                        text: 'Expenses by Categories'
+                                    }
+                                }
+                            });
+                        }
+
+                        // Call renderPieChart function when the page loads
+                        renderPieChart();
+                    </script>
+                </li>
+            </ul>
+        </main>
+    </div>
+
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="JS/script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="sweetalert2.min.js"></script>
+  <link rel="stylesheet" href="sweetalert2.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.0/sweetalert.min.js"></script>
+  <link rel="stylesheet" href="css/Styles.css">
+  <link rel="icon" type="image/x-icon" href="/images/Walletlogoonly.png">
+</head>
+
+<body onload="pageLoad()">
+  <!-- login hover -->
+  <div class="form-section">
+    <div class="switch" id="switch">
+      <div class="row">
+        <img class="logo" src="images/Walletlogoonly.png" alt="logo logo" />
+      </div>
+      <h4 style="text-align: center;">
+        Welcome to Wallet Ace
+      </h4>
+    </div>
+    <div class="login-form center" id="signup-form">
+      <div onclick="closeWindowAndRedirect()" class="close-button">🗙</div>
+      <h1>Sign Up</h1>
+      <!-- <form id="signup-form"> -->
+      <!-- <label for="">Email:</label> -->
+      <input class="form-input" type="text" required placeholder="Username" id="sName" />
+
+      <input class="form-input" type="email" required placeholder="Email" id="sEmail" />
+      <!-- <label for="">Password:</label> -->
+      <input class="form-input" type="password" required placeholder="Password" id="sPassword" />
+
+      <!-- <label for="">Confirm Password:</label> -->
+      <input class="form-input" type="password" placeholder="Confirm password" id="sConfirmPassword" />
+      <button type="submit" class="btn-switch green" onclick="register()">Sign Up</button>
+      <!-- </form> -->
+      <p id="message" class="hidden"></p>
+      <p>
+        Already have an account?<span class="register-link" id="login">Login</span>
+      </p>
+
+    </div>
+
+    <div class="signup-form center" id="loginForm">
+      <div onclick="closeWindowAndRedirect()" class="close-button">🗙</div>
+      <h1>Login </h1>
+
+      <!-- <label for="">Email:</label>0 -->
+      <input class="form-input" type="email" id="txtEmail" placeholder="Email" />
+      <!-- <label for="">Password:</label> -->
+      <input class="form-input" type="password" id="txtPass" placeholder="Password" />
+      <button type="submit" class="btn-switch" onclick="mylogin()">Login</button>
+      <p>
+        Don't have account yet?<span class="register-link" id="signup">Register</span>
+      </p>
+    </div>
+    <div id="error-message"></div>
+  </div>
+
+  <!-- login over -->
+  <script src="JS/scripts.js"></script>
+  <script>
+    async function mylogin() {
+      const email = document.getElementById("txtEmail").value;
+      const pass = document.getElementById("txtPass").value;
+      if (!email) {
+        swal("Please write valid mail");
+        return true;
+      } else if (!pass) {
+        alert("Please write password");
+        return true;
+      }
+      //const getEmail = localStorage.getItem('email');
+      //const getPwd = localStorage.getItem('pwd');
+      //if (String(email).trim() === String(getEmail).trim() && String(pass).trim() === String(getPwd).trim()) {
+      // location.href = 'Dashboard.html';
+      await fetch('http://localhost:3000/api/login', {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+          sPassword: pass
+        }),
+      }).then(res => {
+        console.log('res :>> ', res);
+        if (res.status === 200) {
+          location.href = 'Dashboard.html'
+        }
+        if (res.status === 400) {
+          alert(res.message)
+        }
+      }).catch(err => {
+        console.log('err :>> ', err);
+        alert(err)
+      })
+      //} else {
+      // alert("Invalid your email/password");
+      // }
+    }
+    async function register() {
+      const sName = document.getElementById("sName").value;
+      const email = document.getElementById("sEmail").value;
+      const sPassword = document.getElementById("sPassword").value;
+      const sConfirmPassword = document.getElementById("sConfirmPassword").value;
+      if (!String(email).trim()) {
+        alert("Please write valid mail");
+        return true;
+      } else if (!String(sPassword).trim()) {
+        alert("Please write password");
+        return true;
+      } else if (!String(sConfirmPassword).trim()) {
+        alert("Please write confirm password");
+        return true;
+      }
+
+      if (String(sPassword).trim() === String(sConfirmPassword).trim()) {
+        localStorage.setItem('email', email);
+        localStorage.setItem('pwd', sPassword);
+        //location.href = 'login.html'
+        const param = {
+          email: email,
+          sPassword: sPassword,
+          sName: sName,
+        }
+        await fetch('http://localhost:3000/api/signup', {
+          method: 'POST',
+          mode: 'cors',
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(param),
+        }).then(res => {
+          console.log('res :>> ', res);
+          if (res.status === 200) {
+            location.href = 'login.html'
+          }
+          if (res.status === 400) {
+            alert(res.message)
+          }
+        }).catch(err => {
+          console.log('err :>> ', err);
+          alert(err)
+        })
+      } else {
+        alert("Your password miss match");
+        return true;
+      }
+
+    }
+
+
+
+  </script>
+</body>
+
+</html>

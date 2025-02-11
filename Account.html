@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="css/Account.css">
+    <link rel="icon" type="image/x-icon" href="/images/Walletlogoonly.png">
+    <title>Wallet Ace</title>
+</head>
+
+<body onload="pageLoad()">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a href="Dashboard.html" class="logo">
+            <i class='bx bx-code-alt'></i>
+            <div class="logo-name"><span>Wallet</span>Ace</div>
+        </a>
+        <ul class="side-menu">
+            <li><a href="Dashboard.html"><i class='bx bxs-dashboard'></i>Dashboard</a></li>
+            <li class="active"><a href="#" onclick="myaccount()"><i class='bx bx-store-alt'></i>Accounts</a></li>
+            <li><a href="Split.html" onclick="mysplit()"><i class='bx bx-analyse'></i>Split Bills</a></li>
+            <li><a href="budget.html"><i class='bx bx-cog'></i>Analysis</a></li>
+            <li><a href="recorddetails.html" onclick="myprofile()"><i class='bx bx-group'></i>Records</a></li>
+
+        </ul>
+        <ul class="side-menu">
+            <li>
+                <a href="#" class="logout" onclick="mylogout()">
+
+                    <i class='bx bx-log-out-circle'></i>
+                    Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+    <!-- End of Sidebar -->
+
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Navbar -->
+        <nav>
+            <i class='bx bx-menu'></i>
+            <form action="#">
+            </form>
+            <a href="#" class="notif">
+                <i class='bx bx-bell'></i>
+                <span class="count">12</span>
+            </a>
+            <a href="#" class="profile">
+                <img src="images/logo.png">
+            </a>
+        </nav>
+        <main>
+            <div class="header">
+                <div class="left">
+                    <!-- <h1>Dashboard</h1> -->
+                    <ul class="breadcrumb">
+                        <li><a href="Dashboard.html">
+                                Hey User
+                            </a></li>
+                        /
+                        <li class="active">Account</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Insights -->
+            <ul class="insights">
+                <li style="text-align: center;">
+                    <span>
+                        <p>Accounts</p>
+                    </span>
+                </li>
+                <li>
+                    <span>
+                        <p>Initial Amount</p>
+                    </span>
+                </li>
+                <li>
+                    <span>
+                        <p>Remaining Amount</p>
+                    </span>
+                </li>
+            </ul>
+
+            <ul id="accountShow" class="insights">
+            </ul>
+            <!-- Reminders -->
+            <!-- End of Reminders-->
+        </main>
+    </div>
+
+    <script src="JS/Account.js"></script>
+    <script>
+        function pageLoad() {
+            fetch('http://localhost:3000/api/account', {
+                method: 'GET',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+
+            }).then(res => {
+                console.log('res :>> ', res);
+                if (res.status === 200) {
+                    // location.href = 'Account.html'
+                }
+                if (res.status === 400) {
+                    alert(res.message)
+                }
+
+            }).catch(err => {
+                console.log('err :>> ', err);
+                alert(err)
+            })
+
+
+        }
+    </script>
+
+</body>
+
+</html>
